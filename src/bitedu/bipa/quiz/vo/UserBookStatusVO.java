@@ -1,16 +1,22 @@
 package bitedu.bipa.quiz.vo;
 
+/**
+ * 상단 유저 요약 정보를 나타내기 위한 VO
+ */
 public class UserBookStatusVO {
-	// 대출도서권수, 반납도서, 미반납도서, 반납예정도서, 대출가능권수 이용상태 대출정지기간의 정보를 정리
+
+	// book_user 테이블: 회원의 대출 상태를 표시
 	private String userId;
 	private String userState;
 	private String stopDate;
+	private int availableBook;
+
+	// 회원 대출 정보를 표시하기 위한 추가 정보
 	private int totalUsingBook;
 	private int returnedBook;
 	private int notReturnedBook;
 	private int expectingReturnBook;
-	private int availableBook;
-	
+
 	public UserBookStatusVO() {}
 	public UserBookStatusVO(String userId, String userState, String stopDate, int totalUsingBook, int returnedBook,
 			int notReturnedBook, int expectingReturnBook, int availableBook) {

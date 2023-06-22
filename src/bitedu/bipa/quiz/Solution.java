@@ -21,18 +21,19 @@ import bitedu.bipa.quiz.vo.UserVO;
 public class Solution {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		Solution solution = new Solution();
-		solution.getUserInfo("user1");
+//		solution.getUserInfo("user1"); // todo : 하드코딩 -> 유저아이디 입력받도록
+		solution.borrow(1, "user2");
 	}
 	
 	public void getUserInfo(String userId) {
 		// 도서이용현황에 대한 정보를 가져와서 
 		LibraryBookService lbs = new LibraryBookService();
-		HashMap<String, Object> data = lbs.getUserStatus(userId, "6"); 
-		HashMap<String,UserBookStatusVO>  map1 = (HashMap<String,UserBookStatusVO>)data.get("userInfo");
-		HashMap<String,ArrayList<BookUseStatusVO>>  map2 = (HashMap<String,ArrayList<BookUseStatusVO>>)data.get("bookInfo");
-		
+		HashMap<String, Object> data = lbs.getUserStatus(userId, "6"); // todo : startMonth 는 뭘까..(쓰이지 않음)
+		HashMap<String,UserBookStatusVO> map1 = (HashMap<String, UserBookStatusVO>) data.get("userInfo");
+		HashMap<String,ArrayList<BookUseStatusVO>> map2 = (HashMap<String,ArrayList<BookUseStatusVO>>) data.get("bookInfo");
+
+		// 취합된 유저 정보로 새로운 해쉬맵 생성
 		UserBookStatusVO status = map1.get("user");
 		ArrayList<BookUseStatusVO> list = map2.get("total");
 		ArrayList<BookUseStatusVO> allReturned = map2.get("allReturned");
@@ -87,7 +88,6 @@ public class Solution {
 		try {
 			this.saveUserInfo(userId,json.toJSONString());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -100,5 +100,11 @@ public class Solution {
 		pw.print(userInfo);
 		pw.close();
 		fw.close();
+	}
+
+	private void borrow(int bookSeq, String userId){
+		LibraryBookService lbs = new LibraryBookService();
+		lbs.borrowBooks(bookSeq, userId);
+		this.getUserInfo(userId);
 	}
 }

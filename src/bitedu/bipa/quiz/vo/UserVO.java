@@ -3,7 +3,7 @@ package bitedu.bipa.quiz.vo;
 import java.sql.Timestamp;
 
 public class UserVO {
-	
+	// book_user 테이블 : 개별 회원 정보
 	private int userSeq;
 	private String userId;
 	private String userPass;

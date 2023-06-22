@@ -4,15 +4,23 @@ import java.sql.Timestamp;
 
 import bitedu.bipa.quiz.util.DateCalculation;
 
+/** 전체 도서 목록 표를 나타내기 위한 VO
+ *
+ */
 public class BookUseStatusVO {
+
+	// book_use_status 테이블: 현재 책의 대출 상태를 나타내는 테이블
 	private int bookSeq;
-	private String bookIsbn;
-	private String bookTitle;
-	private String bookAuthor;
 	private String userId;
 	private Timestamp borrowStart;
 	private Timestamp borrowEnd;
 	private Timestamp returnDate;
+
+
+	// 필요한 추가 정보 ?
+	private String bookIsbn;
+	private String bookTitle;
+	private String bookAuthor;
 	
 	public BookUseStatusVO(int bookSeq, String userId, Timestamp borrowStart, Timestamp borrowEnd,
 			Timestamp returnDate) {

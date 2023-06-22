@@ -7,6 +7,7 @@ public class BookVO {
 	private String bookIsbn;
 	
 	public BookVO(int bookSeq, String bookPosition, String bookStatus, String bookIsbn) {
+		// book_copy 테이블. 개별 책 한권에 대한 위치 정보와 상태 정보를 포함
 		super();
 		this.bookSeq = bookSeq;
 		this.bookPosition = bookPosition;
