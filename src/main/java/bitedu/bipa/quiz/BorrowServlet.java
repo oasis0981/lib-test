@@ -1,41 +1,53 @@
 package bitedu.bipa.quiz;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.sound.midi.Soundbank;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import bitedu.bipa.quiz.vo.BookVO;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import bitedu.bipa.quiz.service.LibraryBookService;
 import bitedu.bipa.quiz.vo.BookUseStatusVO;
 import bitedu.bipa.quiz.vo.UserBookStatusVO;
-import bitedu.bipa.quiz.vo.UserVO;
 
-public class Solution {
-
-	public static void main(String[] args) {
-		Solution solution = new Solution();
-//		solution.getUserInfo("user1"); // todo : 하드코딩 -> 유저아이디 입력받도록
-//		solution.borrow(1, "user2");
-		solution.searchBook(5);
+public class BorrowServlet extends HttpServlet {
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		System.out.println("a");
+		String bookSeq = req.getParameter("bookSeq");
+		String userId = req.getParameter("userId");
+		System.out.println("bookSeq: "+bookSeq);
+		
+		// 대출 실행
+		this.borrow(Integer.valueOf(bookSeq), userId);
+		
+		// 유저 정보 갱신 JSON 받아오기
+		String data = this.getData(userId);
+		
+		System.out.println("working");
+		resp.setContentType("text/html; charset=UTF-8");
+		PrintWriter out = resp.getWriter();
+		out.print(data);
+		out.close();
+		
 	}
-
-	public void getUserInfo(String userId) {
-		// 도서이용현황에 대한 정보를 가져와서 
+	
+	private String getData(String userId) {
+		String result = null;
 		LibraryBookService lbs = new LibraryBookService();
 		HashMap<String, Object> data = lbs.getUserStatus(userId, "6"); // todo : startMonth 는 뭘까..(쓰이지 않음)
-		HashMap<String,UserBookStatusVO> map1 = (HashMap<String, UserBookStatusVO>) data.get("userInfo");
-		HashMap<String,ArrayList<BookUseStatusVO>> map2 = (HashMap<String,ArrayList<BookUseStatusVO>>) data.get("bookInfo");
-
-		// 취합된 유저 정보로 새로운 해쉬맵 생성
+		HashMap<String,UserBookStatusVO>  map1 = (HashMap<String,UserBookStatusVO>)data.get("userInfo");
+		HashMap<String,ArrayList<BookUseStatusVO>>  map2 = (HashMap<String,ArrayList<BookUseStatusVO>>)data.get("bookInfo");
+		
 		UserBookStatusVO status = map1.get("user");
 		ArrayList<BookUseStatusVO> list = map2.get("total");
 		ArrayList<BookUseStatusVO> allReturned = map2.get("allReturned");
@@ -86,34 +98,13 @@ public class Solution {
 		json.put("data", info);
 
 		System.out.println(json.toJSONString());
-		//JSON형태로 변환한뒤에 파일로 저장
-		try {
-			this.saveUserInfo(userId,json.toJSONString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		
+		result = json.toJSONString();
+		return result;
 	}
 	
-	private void saveUserInfo(String userId, String userInfo) throws IOException {
-		String path = String.format("D:/dev/test/%s.json",userId);
-		File file = new File(path);
-		FileWriter fw = new FileWriter(file);
-		PrintWriter pw = new PrintWriter(fw);
-		pw.print(userInfo);
-		pw.close();
-		fw.close();
-	}
-
 	private void borrow(int bookSeq, String userId){
 		LibraryBookService lbs = new LibraryBookService();
 		lbs.borrowBooks(bookSeq, userId);
 	}
-
-	private BookVO searchBook(int bookSeq){
-		LibraryBookService lbs = new LibraryBookService();
-		BookVO book = lbs.searchBook(bookSeq);
-		System.out.println(book);
-		return book;
-	}
-
 }

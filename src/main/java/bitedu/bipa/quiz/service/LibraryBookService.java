@@ -21,20 +21,16 @@ public class LibraryBookService {
 	}
 	//select * from book_use_status where user_id = 'user1' and borrow_start between '2023-6-1' and '2023-6-30';
 	// select * from book_user
-
-	/**
-	 * 연체도서를 확인하고 미반납도서 목록에 추가한다.
-	 * 연체날짜를 계산한다.
-	 * 대출정지기간을 DB에 업데이트하는 dao를 실행한다.
-	 * 미반납도서 목록을 리턴한다.
-	 */
+	 
+	// 이용상태 대출정지기간의 정보를 정리
 	private ArrayList<BookUseStatusVO> getNotReturnedBooks(ArrayList<BookUseStatusVO> bookList, Calendar criteriaDate){
-		ArrayList<BookUseStatusVO> result = new ArrayList<>();
+		ArrayList<BookUseStatusVO> result = null;
+		result = new ArrayList<BookUseStatusVO>();
 		Timestamp stopServiceDate = null;
 		//미반납도서 - 반납기간이 지나고 반납날짜가 비어있는 도서
 		String userId = null;
 		for(BookUseStatusVO book : bookList) {
-			if( book.getBorrowEnd().getTime() <  criteriaDate.getTimeInMillis() && book.getReturnDate()==null) {
+			if( book.getBorrowEnd().getTime() <  criteriaDate.getTimeInMillis()&&book.getReturnDate()==null) {
 				userId = book.getUserId();
 				result.add(book);
 				//System.out.println(book);
@@ -52,31 +48,26 @@ public class LibraryBookService {
 			try {
 				dao.updateUserStopStatus(userId, stopServiceDate);
 			} catch (SQLException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	
 		return result;
 	}
-
-	/**
-	 * 반납된 도서를 확인하고 목록에 추가한다.
-	 * 반납도서 목록을 리턴한다.
-	 */
+	
 	private ArrayList<BookUseStatusVO> getReturnedBooks(ArrayList<BookUseStatusVO> bookList){
-		ArrayList<BookUseStatusVO> result = new ArrayList<>();
+		ArrayList<BookUseStatusVO> result = null;
+		//기반납도서
+		result = new ArrayList<BookUseStatusVO>();
 		for(BookUseStatusVO book : bookList) {
-			if(book.getReturnDate()!=null&& book.getBorrowEnd().getTime() >= book.getReturnDate().getTime()) {
+			if(book.getReturnDate()!=null&&book.getBorrowEnd().getTime() >= book.getReturnDate().getTime()) {
 				result.add(book);
 			}
 		}
 		return result;
 	}
-
-	/**
-	 * 반납 예정 도서를 확인하고 목록에 추가한다.
-	 * 반납예정도서 목록을 리턴한다.
-	 */
+	
 	private ArrayList<BookUseStatusVO> getExpectingReturnBooks(ArrayList<BookUseStatusVO> bookList, Calendar criteriaDate){
 		ArrayList<BookUseStatusVO> result = null;
 		//반납예정도서
@@ -89,24 +80,25 @@ public class LibraryBookService {
 		}
 		return result;
 	}
-
-	/**
-	 * 화면에 표시될 유저 정보와 대출 정보를 해쉬맵으로 만들어 리턴하는 메소드
-	 */
+	
+	
 	public HashMap<String, Object> getUserStatus(String userId,String startMonth){
-		HashMap<String, Object> result = new HashMap<>();
+		HashMap<String, Object> result = null;
+		result = new HashMap<String, Object>();
 		
 		UserVO user = null;
 		ArrayList<BookUseStatusVO> list = null;
 	
 		try {
+			
 			list = dao.selectBookInfoByUser(userId, startMonth);
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		Calendar criteriaDate = Calendar.getInstance();
-		criteriaDate.set(2023, 5, 16); // todo: 하드코딩 -> 오늘 날짜로 수정
+		criteriaDate.set(2023, 5, 16);
 		ArrayList<BookUseStatusVO> allReturned = this.getReturnedBooks(list);
 		ArrayList<BookUseStatusVO> notReturned = this.getNotReturnedBooks(list, criteriaDate);
 		ArrayList<BookUseStatusVO> expectingReturn = this.getExpectingReturnBooks(list,criteriaDate);
@@ -114,6 +106,7 @@ public class LibraryBookService {
 		try {
 			user = dao.selectUser(userId);
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -147,20 +140,20 @@ public class LibraryBookService {
 		
 		return result;
 	}
-
-	private ArrayList<BookVO> getAvailableBook(int bookSeq){
-		ArrayList<BookVO> result = new ArrayList<BookVO>();
-		// 이용 가능 도서
-
-
-		return result;
-	}
-
+	
+	
+	
+	
 	public void borrowBooks(int bookSeq, String userId){
 		dao.updateBorrow(bookSeq, userId);
 	}
-
+	
 	public BookVO searchBook(int bookSeq){
 		return dao.selectSearchedBook(bookSeq);
+	}
+	
+	public String searchTitle(String isbn) {
+		String title = dao.searchBookTitle(isbn);
+		return title;
 	}
 }

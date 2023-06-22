@@ -16,17 +16,13 @@ import bitedu.bipa.quiz.vo.UserVO;
 public class LibraryDAO {
 
 	private ConnectionManager manager;
-
+	
 	// 비즈니스 판별은 로직에서
 	public LibraryDAO() {
 		this.manager = ConnectionManager.getInstance();
 	}
-
-	/**
-	 * DB에서 유저 정보를 가져와서 UserVO 설정 : 유저 상태, 이용가능 권수, 대출정지기간
-	 *
-	 * @return UserVO
-	 */
+	
+	
 	public UserVO selectUser(String userId) throws SQLException {
 		UserVO user = null;
 		String sql = "select user_status,max_book,service_stop from book_user where user_id = ?";
@@ -34,26 +30,22 @@ public class LibraryDAO {
 		PreparedStatement pstmt = con.prepareStatement(sql);
 		pstmt.setString(1, userId);
 		ResultSet rs = pstmt.executeQuery();
-		while (rs.next()) {
+		while(rs.next()) {
 			user = new UserVO();
 			user.setUserId(userId);
 			user.setUserState(rs.getString(1));
 			user.setAvailableBook(rs.getInt(2));
 			user.setServiceStop(rs.getTimestamp(3));
 		}
-
+		
 		manager.closeConnection(rs, pstmt, con);
 		return user;
 	}
+	
 
-	/**
-	 * book_copy 테이블과 book_info, book_use_status 테이블을 이너조인한다.
-	 * 조인 후 userId로 필터링한다.
-	 * BookUseStatusVO 타입에 맞게 칼럼을 가져온다.
-	 * BookUseStatusVO로 이루어진 ArrayList를 반환한다.
-	 */
-	public ArrayList<BookUseStatusVO> selectBookInfoByUser(String userId, String startMonth) throws SQLException {
-		ArrayList<BookUseStatusVO> list = new ArrayList<>();
+	public ArrayList<BookUseStatusVO> selectBookInfoByUser(String userId,String startMonth) throws SQLException {
+		ArrayList<BookUseStatusVO> list = null;
+		list = new ArrayList<BookUseStatusVO>();
 		StringBuilder sb = new StringBuilder("select i.book_isbn,i.book_title,i.book_author,s.* ");
 		sb.append("from book_copy c  inner join (book_info i) on c.book_isbn = i.book_isbn ");
 		sb.append("inner join book_use_status s on s.book_seq = c.book_seq ");
@@ -64,23 +56,19 @@ public class LibraryDAO {
 		pstmt.setString(1, userId);
 		ResultSet rs = pstmt.executeQuery();
 		BookUseStatusVO vo = null;
-		while (rs.next()) {
-			vo = new BookUseStatusVO(rs.getInt(4), rs.getString(5),
-					rs.getTimestamp(6), rs.getTimestamp(7), rs.getTimestamp(8));
+		while(rs.next()) {
+			vo = new BookUseStatusVO(rs.getInt(4), rs.getString(5), rs.getTimestamp(6), rs.getTimestamp(7), rs.getTimestamp(8));
 			vo.setBookIsbn(rs.getString(1));
 			vo.setBookTitle(rs.getString(2));
 			vo.setBookAuthor(rs.getString(3));
 			list.add(vo);
 		}
-
+		
 		manager.closeConnection(rs, pstmt, con);
-
+		
 		return list;
 	}
-
-	/**
-	 * 대출정지기간을 DB에 업데이트 하는 메소드
-	 */
+	
 	public boolean updateUserStopStatus(String userId, Timestamp stopDate) throws SQLException {
 		boolean flag = false;
 		String sql = "update book_user set user_status= ?, service_stop = ? where user_id = ?";
@@ -91,7 +79,7 @@ public class LibraryDAO {
 			pstmt.setTimestamp(2, stopDate);
 			pstmt.setString(3, userId);
 			int affectedCount = pstmt.executeUpdate();
-			if (affectedCount > 0) {
+			if(affectedCount>0) {
 				flag = true;
 				//System.out.println("success");
 			}
@@ -101,7 +89,32 @@ public class LibraryDAO {
 		}
 		return flag;
 	}
-
+	
+	
+	/**
+	 * ISBN으로 책제목 찾기
+	 */
+	public String searchBookTitle(String isbn) {
+		String title = "";
+		String sql = "select book_title from book_info where book_isbn=?";
+		Connection con = manager.getConnection();
+		try {
+			PreparedStatement pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, isbn);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				title = rs.getString(1);
+			}
+			manager.closeConnection(rs, pstmt, con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	
+		return title;
+	}
+	
 	/**
 	 * bookseq로 검색할 값을 입력받아 책 정보를 받아오는 메소드
 	 */
@@ -117,6 +130,7 @@ public class LibraryDAO {
 				book = new BookVO(rs.getInt(1), rs.getString(2),
 						rs.getString(3), rs.getString(4));
 			}
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -161,7 +175,7 @@ public class LibraryDAO {
 
 
 			// book_user 테이블 대출가능권수 업데이트
-			String sql2 = "update book_user set max_book = max_book-1 where user_id=?";
+			String sql2 = "update book_user set max_book = max_book-1 where user_id=? AND max_book > 0";
 			PreparedStatement pstmt3 = con.prepareStatement(sql2);
 			pstmt3.setString(1, userId);
 			int rows3 = pstmt3.executeUpdate();
@@ -187,6 +201,5 @@ public class LibraryDAO {
 			}
 		}
 	}
+		
 }
-
-
