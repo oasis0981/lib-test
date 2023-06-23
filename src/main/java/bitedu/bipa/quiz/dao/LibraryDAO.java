@@ -137,7 +137,25 @@ public class LibraryDAO {
 
 		return book;
 	}
-
+	
+	public String updateBookPosition(int bookSeq, String userId, Connection con) {
+		String err ="";
+		// book_copy 테이블 book_position 업데이트
+		try {
+			String sql = "update book_copy set book_position=? where book_seq=?";
+			PreparedStatement pstmt1 = con.prepareStatement(sql);
+			pstmt1.setString(1, "BB-" + userId);
+			pstmt1.setInt(2, bookSeq);
+			int rows1 = pstmt1.executeUpdate();
+			if (rows1 == 0) throw new Exception("book_copy 업데이트 실패");
+			pstmt1.close();
+		} catch (Exception e) {
+			err = e.getMessage();
+		}
+		return err;
+	}
+	
+	
 	/**
 	 * 대출 트랜잭션
 	 */
@@ -148,16 +166,7 @@ public class LibraryDAO {
 			con.setAutoCommit(false);
 
 
-			// book_copy 테이블 book_position 업데이트
-			String sql = "update book_copy set book_position=? where book_seq=?";
-			PreparedStatement pstmt1 = con.prepareStatement(sql);
-			pstmt1.setString(1, "BB-" + userId);
-			pstmt1.setInt(2, bookSeq);
-			int rows1 = pstmt1.executeUpdate();
-			if (rows1 == 0) throw new Exception("book_copy 업데이트 실패");
-			pstmt1.close();
-
-
+			
 			// book_use_status 테이블에 새로운 레코드 추가
 			StringBuilder sb = new StringBuilder();
 			Timestamp ts = new Timestamp(System.currentTimeMillis());

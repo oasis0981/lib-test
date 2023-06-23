@@ -109,7 +109,10 @@
                         let user = user_data.user[0];
                         console.log(user.availableBook)
                         if (user.availableBook == 0 || user.userState !=="정상") {
-                        	$("#borrow").attr("disabled", true)
+                        	$("#bookSeq").attr("disabled", true);
+                        	
+                        	$("#borrow").attr("disabled", true);
+                        	$("#find").attr("disabled", true);
                         } 
 
                         let userStatus = `<tr><td>${user.totalUsingBook}</td><td>${user.returnedBook}</td><td>${user.notReturnedBook}</td>
